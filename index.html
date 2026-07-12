@@ -3,136 +3,238 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Web Talk v1.0</title>
-  <meta name="description" content="Multi-model AI Chat with Y2K style ✨" />
-
-  <!-- Favicon: 复古小机器人 -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E" />
-
-  <!-- Y2K 样式 -->
-  <link rel="stylesheet" href="css/y2k-base.css" />
-  <link rel="stylesheet" href="css/window.css" />
-  <link rel="stylesheet" href="css/themes.css" />
-
-  <!-- Supabase 配置（本地开发用 _config.js，CI 由 GitHub Actions 注入） -->
-  <script src="js/_config.js" onerror="console.warn('No _config.js found, using defaults')"></script>
-
-  <!-- Supabase JS SDK (ESM) -->
-  <script type="module" src="js/supabase-client.js"></script>
+  <title>AI Web Talk</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="js/_config.js" onerror="console.warn('No _config.js')"></script>
 </head>
-<body data-theme="y2k-classic">
-  <!-- 星空背景层 -->
-  <div class="starfield" aria-hidden="true"></div>
+<body>
 
-  <!-- 顶部跑马灯 -->
-  <div class="marquee" aria-label="Welcome marquee">
-    <span>✨ Welcome to AI Web Talk! ✨ Now powered by Multi-Model Magic ✨ Free Tier: 50 messages/day ✨ Press F11 for Fullscreen ✨</span>
-  </div>
-
-  <!-- 桌面图标（拟物化） -->
-  <div class="desktop-icons">
-    <div class="desktop-icon" data-app="chat">
-      <div class="icon-img">💬</div>
-      <div class="icon-label">AI Chat</div>
-    </div>
-    <div class="desktop-icon" data-app="settings">
-      <div class="icon-img">⚙️</div>
-      <div class="icon-label">Settings</div>
-    </div>
-    <div class="desktop-icon" data-app="about">
-      <div class="icon-img">📡</div>
-      <div class="icon-label">About</div>
-    </div>
-  </div>
-
-  <!-- 主窗口：登录/注册 -->
-  <div class="window" id="auth-window">
-    <div class="window-titlebar">
-      <span class="window-title">🔐 Login - AI Web Talk</span>
-      <div class="window-controls">
-        <button class="win-btn win-minimize" title="Minimize">_</button>
-        <button class="win-btn win-maximize" title="Maximize">□</button>
-        <button class="win-btn win-close" title="Close">×</button>
+  <!-- ============== 登录页 ============== -->
+  <div class="auth-page" id="auth-page">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+          <path d="M16 4C9.4 4 4 9.4 4 16c0 2.1.5 4.1 1.5 5.8L4 28l6.3-1.6c1.7.9 3.6 1.4 5.7 1.4 6.6 0 12-5.4 12-12S22.6 4 16 4z" fill="#D97757"/>
+        </svg>
       </div>
-    </div>
-    <div class="window-body">
-      <div class="window-tabs">
-        <button class="tab tab-active" data-tab="login">Login</button>
-        <button class="tab" data-tab="signup">Sign Up</button>
-      </div>
+      <h1 class="auth-title" data-i18n="auth.title">Welcome back</h1>
+      <p class="auth-subtitle" data-i18n="auth.subtitle">Sign in to continue to AI Web Talk</p>
+
       <form id="auth-form" class="auth-form">
-        <label>
-          <span>Email:</span>
-          <input type="email" name="email" required placeholder="you@example.com" />
-        </label>
-        <label>
-          <span>Password:</span>
-          <input type="password" name="password" required minlength="6" placeholder="••••••" />
-        </label>
-        <div class="form-actions">
-          <button type="submit" class="btn-chrome">🚀 Enter</button>
+        <div class="form-field">
+          <label data-i18n="auth.email">Email</label>
+          <input type="email" name="email" required placeholder="you@example.com" autocomplete="email" />
         </div>
-        <div id="auth-message" class="auth-message"></div>
+        <div class="form-field">
+          <label data-i18n="auth.password">Password</label>
+          <input type="password" name="password" required minlength="6" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab is-active" data-tab="login" data-i18n="auth.login">Login</button>
+          <button type="button" class="auth-tab" data-tab="signup" data-i18n="auth.signup">Sign up</button>
+        </div>
+        <button type="submit" class="btn-primary" data-i18n="auth.continue">Continue</button>
+        <div id="auth-message" class="form-message"></div>
       </form>
+
+      <p class="auth-footer" data-i18n="auth.terms">
+        By continuing, you agree to our Terms and Privacy Policy.
+      </p>
     </div>
   </div>
 
-  <!-- 主窗口：聊天（默认隐藏） -->
-  <div class="window hidden" id="chat-window">
-    <div class="window-titlebar">
-      <span class="window-title">💬 AI Web Talk - [Online]</span>
-      <div class="window-controls">
-        <button class="win-btn win-minimize">_</button>
-        <button class="win-btn win-maximize">□</button>
-        <button class="win-btn win-close" id="chat-close">×</button>
+  <!-- ============== 聊天页 ============== -->
+  <div class="app" id="chat-page" hidden>
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <button class="btn-new-chat" id="new-chat-btn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span data-i18n="sidebar.newChat">New chat</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label" data-i18n="sidebar.recent">Recent</div>
+        <ul id="conversation-list" class="conversation-list"></ul>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button class="user-button" id="user-button">
+          <div class="user-avatar" id="user-avatar">U</div>
+          <div class="user-text">
+            <div class="user-name" id="user-name">User</div>
+            <div class="user-email" id="user-email">user@example.com</div>
+          </div>
+        </button>
+        <div class="user-menu" id="user-menu" hidden>
+          <button class="menu-item" data-action="settings">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span data-i18n="menu.settings">Settings</span>
+          </button>
+          <button class="menu-item" data-action="logout">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M6 14H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span data-i18n="menu.logout">Log out</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
+
+    <!-- 主区 -->
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-button" id="sidebar-toggle" aria-label="Toggle sidebar">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+            <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="lang-switcher">
+          <button class="lang-btn is-active" data-lang="en" title="English">EN</button>
+          <button class="lang-btn" data-lang="zh" title="中文">中</button>
+        </div>
+        <select class="model-select" id="model-select">
+          <optgroup label="DeepSeek">
+            <option value="deepseek-v4-flash">DeepSeek V4 Flash</option>
+            <option value="deepseek-v4-pro" selected>DeepSeek V4 Pro</option>
+          </optgroup>
+          <optgroup label="Kimi">
+            <option value="kimi-k2.7-code">Kimi K2.7 Code</option>
+            <option value="kimi-k2.6">Kimi K2.6</option>
+          </optgroup>
+          <optgroup label="MiniMax">
+            <option value="minimax-m2.7">MiniMax M2.7</option>
+            <option value="minimax-m3">MiniMax M3</option>
+          </optgroup>
+          <optgroup label="GLM">
+            <option value="glm-5.1">GLM-5.1</option>
+            <option value="glm-5.2">GLM-5.2</option>
+          </optgroup>
+          <optgroup label="Qwen">
+            <option value="qwen3.6-plus">Qwen3.6 Plus</option>
+            <option value="qwen3.7-plus">Qwen3.7 Plus</option>
+            <option value="qwen3.7-max">Qwen3.7 Max</option>
+          </optgroup>
+          <optgroup label="MiMo">
+            <option value="mimo-v2.5">MiMo V2.5</option>
+            <option value="mimo-v2.5-pro">MiMo V2.5 Pro</option>
+          </optgroup>
+        </select>
+        <div class="budget" id="budget" data-i18n-title="header.budgetTitle" title="Daily budget used">
+          <span class="budget-icon">💰</span>
+          <span class="budget-text" id="budget-text">$0.0000</span>
+        </div>
+      </header>
+
+      <div class="messages" id="messages">
+        <div class="empty" id="empty">
+          <h2 class="empty-title" data-i18n="empty.title">How can I help today?</h2>
+          <button class="btn-primary" id="empty-new-chat" data-i18n="empty.start">Start a new chat</button>
+        </div>
+      </div>
+
+      <div class="composer-wrap">
+        <form id="chat-form" class="composer">
+          <textarea
+            id="user-input"
+            class="composer-input"
+            rows="1"
+            data-i18n-placeholder="composer.placeholder"
+            placeholder="Reply to AI Web Talk..."
+            required></textarea>
+          <button type="submit" class="btn-send" id="send-btn" aria-label="Send">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </form>
+        <p class="composer-hint" data-i18n="composer.hint">AI Web Talk can make mistakes. Consider checking important information.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============== 设置弹窗 ============== -->
+  <div class="modal" id="settings-modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 data-i18n="settings.title">Settings</h3>
+        <button class="icon-button" data-close aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <div class="setting-label-row">
+            <label class="setting-label" data-i18n="settings.thinkingEnable">Enable thinking</label>
+            <label class="switch">
+              <input type="checkbox" id="setting-thinking" checked />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+          <div class="setting-hint" data-i18n="settings.thinkingHint">Let the model think before responding (slower but more accurate)</div>
+        </div>
+        <div class="setting-group" id="thinking-level-group">
+          <div class="setting-label-row">
+            <label class="setting-label" data-i18n="settings.thinkingLevel">Thinking level</label>
+            <span class="setting-value" id="thinking-value">Medium</span>
+          </div>
+          <input type="range" id="setting-thinking-level" min="0" max="2" step="1" value="1" />
+          <div class="setting-hint thinking-levels">
+            <span class="level-label" data-level="0" data-i18n="settings.thinkingLow">Low · fast</span>
+            <span class="level-label" data-level="1" data-i18n="settings.thinkingMed">Medium · balanced</span>
+            <span class="level-label" data-level="2" data-i18n="settings.thinkingHigh">High · deep</span>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label class="setting-label" data-i18n="settings.systemPrompt">System prompt</label>
+          <textarea id="setting-system" rows="4" data-i18n-placeholder="settings.systemPromptPh" placeholder="You are a helpful assistant..."></textarea>
+          <div class="setting-hint" data-i18n="settings.systemPromptHint">Sets the behavior of the AI. Leave empty for default.</div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label-row">
+            <label class="setting-label" data-i18n="settings.temperature">Temperature</label>
+            <span class="setting-value" id="temp-value">0.7</span>
+          </div>
+          <input type="range" id="setting-temp" min="0" max="2" step="0.1" value="0.7" />
+          <div class="setting-hint" data-i18n="settings.temperatureHint">Lower = more focused · Higher = more creative</div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label-row">
+            <label class="setting-label" data-i18n="settings.maxTokens">Max tokens</label>
+            <span class="setting-value" id="maxtok-value">2048</span>
+          </div>
+          <input type="range" id="setting-maxtok" min="256" max="8192" step="256" value="2048" />
+          <div class="setting-hint" data-i18n="settings.maxTokensHint">Maximum length of AI response</div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label-row">
+            <label class="setting-label" data-i18n="settings.topP">Top P</label>
+            <span class="setting-value" id="topp-value">1.00</span>
+          </div>
+          <input type="range" id="setting-topp" min="0" max="1" step="0.05" value="1.0" />
+          <div class="setting-hint" data-i18n="settings.topPHint">Nucleus sampling threshold</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" data-close data-i18n="settings.cancel">Cancel</button>
+        <button class="btn-primary" id="settings-save" data-i18n="settings.save">Save</button>
       </div>
     </div>
-    <div class="window-menubar">
-      <span class="menu-item">File</span>
-      <span class="menu-item">Edit</span>
-      <span class="menu-item">Models</span>
-      <span class="menu-item">Help</span>
-      <span class="menu-item menu-right" id="logout-btn">Logout</span>
-    </div>
-    <div class="window-body chat-body">
-      <!-- 左侧：会话列表 -->
-      <aside class="chat-sidebar">
-        <button id="new-chat-btn" class="btn-chrome btn-full">➕ New Chat</button>
-        <ul id="conversation-list" class="conversation-list"></ul>
-      </aside>
-
-      <!-- 右侧：对话区 -->
-      <main class="chat-main">
-        <div id="messages" class="messages"></div>
-        <form id="chat-form" class="chat-input">
-          <label class="model-picker">
-            <span>Model:</span>
-            <select id="model-select">
-              <option value="gpt-4o-mini">🟢 GPT-4o mini</option>
-              <option value="gpt-4o">💎 GPT-4o</option>
-              <option value="claude-3.5">🟣 Claude 3.5 Sonnet</option>
-              <option value="gemini-1.5">🔵 Gemini 1.5 Pro</option>
-              <option value="deepseek">🐳 DeepSeek Chat</option>
-            </select>
-          </label>
-          <textarea id="user-input" rows="2" placeholder="Ask me anything... (Shift+Enter for new line)" required></textarea>
-          <button type="submit" class="btn-chrome btn-send">🚀 Send</button>
-        </form>
-      </main>
-    </div>
-    <div class="window-statusbar">
-      <span id="status-text">🟢 Connected</span>
-      <span id="quota-text">Tokens: 0 / 50</span>
-      <span class="status-right">v1.0 © 2000-style</span>
-    </div>
   </div>
 
-  <!-- 音效由 Web Audio API 动态生成（见 y2k-effects.js） -->
-
-  <!-- 业务逻辑 -->
-  <script type="module" src="js/auth.js"></script>
-  <script type="module" src="js/chat.js"></script>
-  <script type="module" src="js/streaming.js"></script>
-  <script type="module" src="js/y2k-effects.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

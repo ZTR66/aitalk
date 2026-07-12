@@ -1,8 +1,9 @@
 -- ============================================
--- AI Web Talk - Initial Database Schema
+-- AI Web Talk - Initial Database Schema (Idempotent)
+-- 可重复执行，不会因已存在对象而失败
 -- ============================================
 
--- 用户配额表
+-- ---------- 用户配额表 ----------
 create table if not exists public.user_quotas (
   user_id uuid primary key references auth.users(id) on delete cascade,
   daily_limit int default 50,
@@ -11,7 +12,7 @@ create table if not exists public.user_quotas (
   plan text default 'free' check (plan in ('free', 'pro'))
 );
 
--- 对话表
+-- ---------- 对话表 ----------
 create table if not exists public.conversations (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -24,7 +25,7 @@ create table if not exists public.conversations (
 create index if not exists idx_conversations_user
   on public.conversations(user_id, updated_at desc);
 
--- 消息表
+-- ---------- 消息表 ----------
 create table if not exists public.messages (
   id uuid primary key default gen_random_uuid(),
   conversation_id uuid not null references public.conversations(id) on delete cascade,
@@ -39,7 +40,7 @@ create index if not exists idx_messages_conv
   on public.messages(conversation_id, created_at asc);
 
 -- ============================================
--- 触发器：自动更新 updated_at
+-- 触发器函数：自动更新 updated_at
 -- ============================================
 create or replace function public.touch_updated_at()
 returns trigger language plpgsql as $$
@@ -55,7 +56,7 @@ create trigger trg_conversations_updated
   for each row execute function public.touch_updated_at();
 
 -- ============================================
--- 触发器：新用户自动创建配额
+-- 触发器函数：新用户自动创建配额
 -- ============================================
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer as $$
@@ -88,6 +89,11 @@ $$;
 alter table public.user_quotas enable row level security;
 alter table public.conversations enable row level security;
 alter table public.messages enable row level security;
+
+-- 删除可能残留的策略（保证幂等）
+drop policy if exists "Users read own quota" on public.user_quotas;
+drop policy if exists "Users manage own conversations" on public.conversations;
+drop policy if exists "Users manage own messages" on public.messages;
 
 -- 用户只能读自己的配额
 create policy "Users read own quota" on public.user_quotas
