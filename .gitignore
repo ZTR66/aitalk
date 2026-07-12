@@ -1,0 +1,43 @@
+# 依赖
+node_modules/
+.pnp
+.pnp.js
+
+# 构建
+dist/
+build/
+*.tgz
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# Supabase 本地
+supabase/.branches
+supabase/.temp
+supabase/.env
+
+# 配置注入（CI 自动生成）
+js/_config.js
+
+# 操作系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 日志
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 临时文件
+*.tmp
+.cache/

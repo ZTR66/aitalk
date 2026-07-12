@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Web Talk v1.0</title>
+  <meta name="description" content="Multi-model AI Chat with Y2K style ✨" />
+
+  <!-- Favicon: 复古小机器人 -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E" />
+
+  <!-- Y2K 样式 -->
+  <link rel="stylesheet" href="css/y2k-base.css" />
+  <link rel="stylesheet" href="css/window.css" />
+  <link rel="stylesheet" href="css/themes.css" />
+
+  <!-- Supabase 配置（本地开发用 _config.js，CI 由 GitHub Actions 注入） -->
+  <script src="js/_config.js" onerror="console.warn('No _config.js found, using defaults')"></script>
+
+  <!-- Supabase JS SDK (ESM) -->
+  <script type="module" src="js/supabase-client.js"></script>
+</head>
+<body data-theme="y2k-classic">
+  <!-- 星空背景层 -->
+  <div class="starfield" aria-hidden="true"></div>
+
+  <!-- 顶部跑马灯 -->
+  <div class="marquee" aria-label="Welcome marquee">
+    <span>✨ Welcome to AI Web Talk! ✨ Now powered by Multi-Model Magic ✨ Free Tier: 50 messages/day ✨ Press F11 for Fullscreen ✨</span>
+  </div>
+
+  <!-- 桌面图标（拟物化） -->
+  <div class="desktop-icons">
+    <div class="desktop-icon" data-app="chat">
+      <div class="icon-img">💬</div>
+      <div class="icon-label">AI Chat</div>
+    </div>
+    <div class="desktop-icon" data-app="settings">
+      <div class="icon-img">⚙️</div>
+      <div class="icon-label">Settings</div>
+    </div>
+    <div class="desktop-icon" data-app="about">
+      <div class="icon-img">📡</div>
+      <div class="icon-label">About</div>
+    </div>
+  </div>
+
+  <!-- 主窗口：登录/注册 -->
+  <div class="window" id="auth-window">
+    <div class="window-titlebar">
+      <span class="window-title">🔐 Login - AI Web Talk</span>
+      <div class="window-controls">
+        <button class="win-btn win-minimize" title="Minimize">_</button>
+        <button class="win-btn win-maximize" title="Maximize">□</button>
+        <button class="win-btn win-close" title="Close">×</button>
+      </div>
+    </div>
+    <div class="window-body">
+      <div class="window-tabs">
+        <button class="tab tab-active" data-tab="login">Login</button>
+        <button class="tab" data-tab="signup">Sign Up</button>
+      </div>
+      <form id="auth-form" class="auth-form">
+        <label>
+          <span>Email:</span>
+          <input type="email" name="email" required placeholder="you@example.com" />
+        </label>
+        <label>
+          <span>Password:</span>
+          <input type="password" name="password" required minlength="6" placeholder="••••••" />
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn-chrome">🚀 Enter</button>
+        </div>
+        <div id="auth-message" class="auth-message"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 主窗口：聊天（默认隐藏） -->
+  <div class="window hidden" id="chat-window">
+    <div class="window-titlebar">
+      <span class="window-title">💬 AI Web Talk - [Online]</span>
+      <div class="window-controls">
+        <button class="win-btn win-minimize">_</button>
+        <button class="win-btn win-maximize">□</button>
+        <button class="win-btn win-close" id="chat-close">×</button>
+      </div>
+    </div>
+    <div class="window-menubar">
+      <span class="menu-item">File</span>
+      <span class="menu-item">Edit</span>
+      <span class="menu-item">Models</span>
+      <span class="menu-item">Help</span>
+      <span class="menu-item menu-right" id="logout-btn">Logout</span>
+    </div>
+    <div class="window-body chat-body">
+      <!-- 左侧：会话列表 -->
+      <aside class="chat-sidebar">
+        <button id="new-chat-btn" class="btn-chrome btn-full">➕ New Chat</button>
+        <ul id="conversation-list" class="conversation-list"></ul>
+      </aside>
+
+      <!-- 右侧：对话区 -->
+      <main class="chat-main">
+        <div id="messages" class="messages"></div>
+        <form id="chat-form" class="chat-input">
+          <label class="model-picker">
+            <span>Model:</span>
+            <select id="model-select">
+              <option value="gpt-4o-mini">🟢 GPT-4o mini</option>
+              <option value="gpt-4o">💎 GPT-4o</option>
+              <option value="claude-3.5">🟣 Claude 3.5 Sonnet</option>
+              <option value="gemini-1.5">🔵 Gemini 1.5 Pro</option>
+              <option value="deepseek">🐳 DeepSeek Chat</option>
+            </select>
+          </label>
+          <textarea id="user-input" rows="2" placeholder="Ask me anything... (Shift+Enter for new line)" required></textarea>
+          <button type="submit" class="btn-chrome btn-send">🚀 Send</button>
+        </form>
+      </main>
+    </div>
+    <div class="window-statusbar">
+      <span id="status-text">🟢 Connected</span>
+      <span id="quota-text">Tokens: 0 / 50</span>
+      <span class="status-right">v1.0 © 2000-style</span>
+    </div>
+  </div>
+
+  <!-- 音效由 Web Audio API 动态生成（见 y2k-effects.js） -->
+
+  <!-- 业务逻辑 -->
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/chat.js"></script>
+  <script type="module" src="js/streaming.js"></script>
+  <script type="module" src="js/y2k-effects.js"></script>
+</body>
+</html>
