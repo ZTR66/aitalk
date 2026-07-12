@@ -10,7 +10,6 @@ permissions:
   pages: write
   id-token: write
 
-# 同一时间只允许一个部署
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -27,15 +26,20 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Inject Supabase Config
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
+          set -e
+          mkdir -p js
           cat > js/_config.js <<EOF
           window.__SUPABASE_CONFIG__ = {
-            url: '${{ secrets.SUPABASE_URL }}',
-            anonKey: '${{ secrets.SUPABASE_ANON_KEY }}',
+            url: "${SUPABASE_URL}",
+            anonKey: "${SUPABASE_ANON_KEY}",
           };
           EOF
-          # 在 index.html </head> 前注入 config 脚本
-          sed -i 's|</head>|<script src="js/_config.js"></script></head>|' index.html
+          echo "Generated _config.js:"
+          cat js/_config.js
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
